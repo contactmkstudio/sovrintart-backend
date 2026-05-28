@@ -31,7 +31,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 if DEBUG:
     ALLOWED_HOSTS = ['*']  # Allow all in development
 else:
-    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'web-production-6ce08.up.railway.app,localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -139,6 +139,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',  # Angular default
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5173',
+    'https://mkkatelier.vercel.app',  # Production frontend
 ]
 
 # Add production frontend URL from environment variable
@@ -157,6 +158,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:4200',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5173',
+    'https://web-production-6ce08.up.railway.app',
+    'https://mkkatelier.vercel.app',
 ]
 
 # Add production frontend URL from environment variable
