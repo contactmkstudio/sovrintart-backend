@@ -5,43 +5,109 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from apps.core.models import FAQ
 import json
+from .serializer import ContactEmailSerializer, FAQSerializer, NavigationLinksSerializer
+from .models import NavigationLinks
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 # Create your views here.
 @method_decorator(csrf_exempt, name='dispatch')
 class FAQListView(View):
+
+    # Get FAQs API
     def get(self, request):
-        faqs = FAQ.objects.all()
-        data = [
-            {
-                "id": faq.id,
-                "question": faq.question,
-                "answer": faq.answer,
-                "created_at": faq.created_at.isoformat()
-            }
-            for faq in faqs
-        ]
-        return JsonResponse(data , safe=False)
-    
+        try:
+            faqs = FAQ.objects.all()
+            if not faqs.exists():
+                return JsonResponse({"message" : "No FAQs Found"} , status=404)
+            serializer = FAQSerializer(faqs, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        except Exception as e:
+            print(f"Error fetching FAQs: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+  
+    # Create FAQ API
     def post(self, request):
         try:
             data = json.loads(request.body)
-            print("Received data:", data)
-            
-            # Create FAQ
-            faq = FAQ.objects.create(
-                question=data.get('question'),
-                answer=data.get('answer')
-            )
-            
-            return JsonResponse({
+
+            serializer = FAQSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse({
                 "message": "FAQ created successfully",
-                "id": faq.id,
-                "question": faq.question,
-                "answer": faq.answer
-            }, status=201)
+                "data": serializer.data
+                }, status=201)
+            return JsonResponse(serializer.errors, status=400)
         except json.JSONDecodeError as e:
             print(f"JSON Error: {e}")
             return JsonResponse({"error": "Invalid JSON"}, status=400)
         except Exception as e:
             print(f"Error creating FAQ: {e}")
+            return JsonResponse({"error": str(e)}, status=400)
+        
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class NavigattionLinksView(View):
+    def get(self, request):
+        try:
+            links = NavigationLinks.objects.all()
+            if not links.exists():
+                return JsonResponse({"message": "No Navigation Links Found"}, status=404)
+            serializer = NavigationLinksSerializer(links, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        except Exception as e:
+            print(f"Error fetching Navigation Links: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            serializer = NavigationLinksSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse({"message": "Navigation Link created successfully", "data": serializer.data}, status=201)
+            return JsonResponse(serializer.errors, status=400)
+        except json.JSONDecodeError as e:
+            print(f"JSON Error: {e}")
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            print(f"Error creating Navigation Link: {e}")
+            return JsonResponse({"error": str(e)}, status=400)
+        
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SendEmailView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            serializer = ContactEmailSerializer(data=data)
+            if serializer.is_valid():
+                name = serializer.validated_data['name']
+                email = serializer.validated_data['email']
+                message = serializer.validated_data['message']
+
+                send_mail(
+                    subject=f"Contact Form - {name}",
+                    message=f"""
+                    Name: {name}
+                    Email: {email}
+                    Message:{message}
+                    """,
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[settings.EMAIL_HOST_USER],
+                    fail_silently=False,
+                    )
+                return JsonResponse({"message": "Email sent successfully"}, status=200)
+            return JsonResponse(serializer.errors, status=400)
+        except json.JSONDecodeError as e:
+            print(f"JSON Error: {e}")
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            print(f"Error sending email: {e}")
             return JsonResponse({"error": str(e)}, status=400)

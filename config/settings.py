@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,9 +32,10 @@ SECRET_KEY = 'django-insecure-(ymr03qyqs*6yv200rak$^mvm%lnl-$5h2+qcaw171-+af0@30
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+
 # ALLOWED_HOSTS configuration
 if DEBUG:
-    ALLOWED_HOSTS = ['*']  # Allow all in development
+    ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']  # Allow all in development
 else:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'web-production-6ce08.up.railway.app,localhost,127.0.0.1').split(',')
 
@@ -109,6 +115,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'accounts.User'  # Custom user model
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -164,3 +172,13 @@ CSRF_TRUSTED_ORIGINS = [
 # Add production frontend URL from environment variable
 if os.environ.get('FRONTEND_URL'):
     CSRF_TRUSTED_ORIGINS.append(os.environ.get('FRONTEND_URL'))
+
+
+# Email configuration (using console backend for development)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'nagarajrakesh2000@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
