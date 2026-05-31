@@ -7,9 +7,3 @@ class FAQ(models.Model):
 
     def __str__(self):
         return self.question
-class NavigationLinks(models.Model):
-    name = models.CharField(max_length=100)
-    url = models.URLField()
-
-    def __str__(self):
-        return self.name

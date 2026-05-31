@@ -5,8 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from apps.core.models import FAQ
 import json
-from .serializer import ContactEmailSerializer, FAQSerializer, NavigationLinksSerializer
-from .models import NavigationLinks
+from .serializer import ContactEmailSerializer, FAQSerializer
+
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -48,39 +48,6 @@ class FAQListView(View):
             print(f"Error creating FAQ: {e}")
             return JsonResponse({"error": str(e)}, status=400)
         
-
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class NavigattionLinksView(View):
-    def get(self, request):
-        try:
-            links = NavigationLinks.objects.all()
-            if not links.exists():
-                return JsonResponse({"message": "No Navigation Links Found"}, status=404)
-            serializer = NavigationLinksSerializer(links, many=True)
-            return JsonResponse(serializer.data, safe=False)
-        except Exception as e:
-            print(f"Error fetching Navigation Links: {e}")
-            return JsonResponse({"error": str(e)}, status=500)
-
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            serializer = NavigationLinksSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse({"message": "Navigation Link created successfully", "data": serializer.data}, status=201)
-            return JsonResponse(serializer.errors, status=400)
-        except json.JSONDecodeError as e:
-            print(f"JSON Error: {e}")
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-        except Exception as e:
-            print(f"Error creating Navigation Link: {e}")
-            return JsonResponse({"error": str(e)}, status=400)
-        
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class SendEmailView(View):
     def post(self, request):
@@ -111,3 +78,4 @@ class SendEmailView(View):
         except Exception as e:
             print(f"Error sending email: {e}")
             return JsonResponse({"error": str(e)}, status=400)
+    
