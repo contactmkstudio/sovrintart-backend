@@ -65,7 +65,7 @@ class SendEmailView(View):
                 response = resend.Emails.send(
                     {
                         "from": "onboarding@resend.dev",
-                        "to": ["nagaraj.vh@royalbrothers.com"],
+                        "to": ["contact.mkstudio@protonmail.com"],
                         "subject": f"Contact Form - {name}",
                         "text": f"Name: {name}\nEmail: {email}\nMessage: {message}"
                     }
