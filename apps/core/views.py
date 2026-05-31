@@ -48,6 +48,8 @@ class FAQListView(View):
             print(f"Error creating FAQ: {e}")
             return JsonResponse({"error": str(e)}, status=400)
         
+
+        
 @method_decorator(csrf_exempt, name='dispatch')
 class SendEmailView(View):
     def post(self, request):
@@ -58,6 +60,11 @@ class SendEmailView(View):
                 name = serializer.validated_data['name']
                 email = serializer.validated_data['email']
                 message = serializer.validated_data['message']
+
+                print("HOST:", settings.EMAIL_HOST)
+                print("PORT:", settings.EMAIL_PORT)
+                print("USER:", settings.EMAIL_HOST_USER)
+                print("PASSWORD EXISTS:", bool(settings.EMAIL_HOST_PASSWORD))
 
                 send_mail(
                     subject=f"Contact Form - {name}",
