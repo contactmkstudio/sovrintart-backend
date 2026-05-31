@@ -78,4 +78,17 @@ class SendEmailView(View):
         except Exception as e:
             print(f"Error sending email: {e}")
             return JsonResponse({"error": str(e)}, status=400)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
+class FAQDeleteView(View):
+    def delete(self, request, faq_id):
+        try:
+            faq = FAQ.objects.filter(id=faq_id)
+            if not faq.exists():
+                return JsonResponse({"message": "FAQ Not Found"}, status=404)
+            faq.delete()
+            return JsonResponse({"message": "FAQ Deleted Successfully"}, status=200)
+        except Exception as e:
+            print(f"Error deleting FAQ: {e}")
+            return JsonResponse({"error": str(e)}, status=400)
+      
