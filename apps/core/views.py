@@ -6,9 +6,8 @@ from django.utils.decorators import method_decorator
 from apps.core.models import FAQ
 import json
 from .serializer import ContactEmailSerializer, FAQSerializer
-
-from django.core.mail import send_mail
-from django.conf import settings
+import os
+import resend
 
 
 # Create your views here.
@@ -61,22 +60,18 @@ class SendEmailView(View):
                 email = serializer.validated_data['email']
                 message = serializer.validated_data['message']
 
-                print("HOST:", settings.EMAIL_HOST)
-                print("PORT:", settings.EMAIL_PORT)
-                print("USER:", settings.EMAIL_HOST_USER)
-                print("PASSWORD EXISTS:", bool(settings.EMAIL_HOST_PASSWORD))
-
-                send_mail(
-                    subject=f"Contact Form - {name}",
-                    message=f"""
-                    Name: {name}
-                    Email: {email}
-                    Message:{message}
-                    """,
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[settings.EMAIL_HOST_USER],
-                    fail_silently=False,
-                    )
+                resend_api_key = os.getenv('RESEND_API_KEY')
+                resend.api_key = resend_api_key
+                response = resend.Emails.send(
+                    {
+                        "from": "onboarding@resend.dev",
+                        "to": ["nagaraj.vh@royalbrothers.com"],
+                        "subject": f"Contact Form - {name}",
+                        "text": f"Name: {name}\nEmail: {email}\nMessage: {message}"
+                    }
+                )
+                if response.get('error'):
+                    return JsonResponse({"error": response['error']}, status=400)
                 return JsonResponse({"message": "Email sent successfully"}, status=200)
             return JsonResponse(serializer.errors, status=400)
         except json.JSONDecodeError as e:
