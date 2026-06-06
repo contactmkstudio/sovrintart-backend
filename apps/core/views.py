@@ -48,7 +48,8 @@ class FAQListView(View):
             return JsonResponse({"error": str(e)}, status=400)
         
 
-        
+
+# send email API        
 @method_decorator(csrf_exempt, name='dispatch')
 class SendEmailView(View):
     def post(self, request):

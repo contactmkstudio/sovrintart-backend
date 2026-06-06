@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'apps.carts',
     'apps.core',
     'apps.products',
+    'apps.orders',
 ]
 
 MIDDLEWARE = [
@@ -149,6 +150,10 @@ CORS_ALLOWED_ORIGINS = [
     'https://mkkatelier.vercel.app',  # Production frontend
 ]
 
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://192\.168\.\d+\.\d+(:\d+)?$",  # Allow all local network devices
+]
+
 # Add production frontend URL from environment variable
 if os.environ.get('FRONTEND_URL'):
     CORS_ALLOWED_ORIGINS.append(os.environ.get('FRONTEND_URL'))
@@ -167,6 +172,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:5173',
     'https://web-production-6ce08.up.railway.app',
     'https://mkkatelier.vercel.app',
+    'http://192.168.0.106:8000',
 ]
 
 # Add production frontend URL from environment variable
@@ -182,3 +188,13 @@ EMAIL_USE_SSL = True
 EMAIL_USE_TLS = False
 EMAIL_HOST_USER = 'resend'
 DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
+
+# Razorpay Configuration
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
+
+# PayPal Configuration
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '')
+PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET', '')
+PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')  # 'sandbox' or 'live'
