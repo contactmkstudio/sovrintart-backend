@@ -7,3 +7,12 @@ class FAQ(models.Model):
 
     def __str__(self):
         return self.question
+
+
+class Announcement(models.Model):
+    text = models.TextField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.text[:50]

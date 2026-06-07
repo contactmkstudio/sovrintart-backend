@@ -44,10 +44,10 @@ class LoginSerializer(serializers.Serializer):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError("Credentials not matching")
 
         if not user.check_password(password):
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError("Credentials not matching")
 
         data['user'] = user
         data['name'] = user.name

@@ -3,14 +3,63 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from apps.core.models import FAQ
+from apps.core.models import FAQ, Announcement
 import json
-from .serializer import ContactEmailSerializer, FAQSerializer
+from .serializer import ContactEmailSerializer, FAQSerializer, AnnouncementSerializer
 import os
 import resend
+from apps.products.models import Product
+from apps.orders.models import Order
+from apps.accounts.models import User
 
 
 # Create your views here.
+@method_decorator(csrf_exempt, name='dispatch')
+class DashboardStatsView(View):
+    def get(self, request):
+        try:
+            stats = {
+                "total_products": Product.objects.count(),
+                "orders": {
+                    "paid": Order.objects.filter(status='paid').count(),
+                    "pending": Order.objects.filter(status='pending').count(),
+                    "failed": Order.objects.filter(status='failed').count(),
+                },
+                "total_users": User.objects.count(),
+                "logged_in_users": User.objects.filter(last_login__isnull=False).count(),
+            }
+            return JsonResponse({"message": "Stats retrieved successfully", "data": stats}, status=200)
+        except Exception as e:
+            print(f"Exception: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AnnouncementView(View):
+    def get(self, request):
+        try:
+            announcement = Announcement.objects.filter(is_active=True).last()
+            if not announcement:
+                return JsonResponse({"message": "No active announcement"}, status=404)
+            serializer = AnnouncementSerializer(announcement)
+            return JsonResponse({"data": serializer.data}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            serializer = AnnouncementSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse({"message": "Announcement created", "data": serializer.data}, status=201)
+            return JsonResponse(serializer.errors, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class FAQListView(View):
 

@@ -41,6 +41,7 @@ class LoginView(View):
                     "data": serializer.data,
                     "status": 200
                 }, status=200)
+            return JsonResponse({"error": "Credentials not matching"}, status=400)
         except json.JSONDecodeError as e:   
             print(f"JSON Error: {e}")
             return JsonResponse({"error": "Invalid JSON"}, status=400)  
