@@ -43,6 +43,22 @@ class GetProducts(View):
             return JsonResponse({"error": str(e)}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
+class GetProductById(View):
+    def get(self, request, pk):
+        try:
+            product = Product.objects.get(pk=pk)
+            serializer = ProductSerializer(product)
+            return JsonResponse({
+                "message": "Product retrieved successfully",
+                "data": serializer.data
+            }, status=200)
+        except Product.DoesNotExist:
+            return JsonResponse({"error": "Product not found"}, status=404)
+        except Exception as e:
+            print(f"Exception: {e}")
+            return JsonResponse({"error": str(e)}, status=400)
+
+@method_decorator(csrf_exempt, name='dispatch')
 class DeleteProduct(View):
     def delete(self , request , pk):
         try:
