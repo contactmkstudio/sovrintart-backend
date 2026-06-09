@@ -180,14 +180,15 @@ if os.environ.get('FRONTEND_URL'):
     CSRF_TRUSTED_ORIGINS.append(os.environ.get('FRONTEND_URL'))
 
 
-# Email configuration (using console backend for development)
+# Email configuration (SendGrid)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.resend.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_USE_TLS = False
-EMAIL_HOST_USER = 'resend'
-DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', '')
 
 # Razorpay Configuration
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')

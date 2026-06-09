@@ -59,6 +59,20 @@ class GetProductById(View):
             return JsonResponse({"error": str(e)}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
+class GetProductsByCategory(View):
+    def get(self, request, category):
+        try:
+            products = Product.objects.filter(category__iexact=category)
+            serializer = ProductSerializer(products, many=True)
+            return JsonResponse({
+                "message": "Products retrieved successfully",
+                "data": serializer.data
+            }, status=200)
+        except Exception as e:
+            print(f"Exception: {e}")
+            return JsonResponse({"error": str(e)}, status=400)
+
+@method_decorator(csrf_exempt, name='dispatch')
 class DeleteProduct(View):
     def delete(self , request , pk):
         try:

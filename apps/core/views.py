@@ -3,14 +3,66 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from apps.core.models import FAQ, Announcement
+from apps.core.models import FAQ, Announcement, BannerImages
 import json
+import base64
 from .serializer import ContactEmailSerializer, FAQSerializer, AnnouncementSerializer
 import os
-import resend
+from django.core.mail import send_mail
+from django.conf import settings as django_settings
 from apps.products.models import Product
 from apps.orders.models import Order
 from apps.accounts.models import User
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadBannerImages(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            images = data.get('images', [])
+
+            if not images or not isinstance(images, list):
+                return JsonResponse({"error": "Provide 'images' as a list of objects with an 'image' key"}, status=400)
+
+            if len(images) > 5:
+                return JsonResponse({"error": "Maximum 5 images allowed"}, status=400)
+
+            image_data = {}
+            for i, item in enumerate(images, start=1):
+                image_value = item.get('image', '').strip()
+                if image_value:
+                    image_data[f'image_{i}'] = image_value
+
+            if not image_data:
+                return JsonResponse({"error": "No valid images provided"}, status=400)
+
+            banner = BannerImages.objects.create(**image_data)
+
+            return JsonResponse({
+                "message": "Images uploaded successfully",
+                "id": banner.pk,
+                "data": image_data
+            }, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            print(f"Exception: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    def get(self, request):
+        try:
+            banner = BannerImages.objects.last()
+            if not banner:
+                return JsonResponse({"message": "No banner images found"}, status=404)
+            images = [
+                {"image": getattr(banner, f"image_{i}")}
+                for i in range(1, 6)
+                if getattr(banner, f"image_{i}")
+            ]
+            return JsonResponse({"message": "Banner images retrieved", "data": {"id": banner.pk, "images": images}}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
 
 # Create your views here.
@@ -111,17 +163,13 @@ class SendEmailView(View):
                 message = serializer.validated_data['message']
 
                 resend_api_key = os.getenv('RESEND_API_KEY')
-                resend.api_key = resend_api_key
-                response = resend.Emails.send(
-                    {
-                        "from": "onboarding@resend.dev",
-                        "to": ["contact.mkstudio@protonmail.com"],
-                        "subject": f"Contact Form - {name}",
-                        "text": f"Name: {name}\nEmail: {email}\nMessage: {message}"
-                    }
+                send_mail(
+                    subject=f"Contact Form - {name}",
+                    message=f"Name: {name}\nEmail: {email}\nMessage: {message}",
+                    from_email=django_settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=["contact.mkstudio@protonmail.com"],
+                    fail_silently=False,
                 )
-                if response.get('error'):
-                    return JsonResponse({"error": response['error']}, status=400)
                 return JsonResponse({"message": "Email sent successfully"}, status=200)
             return JsonResponse(serializer.errors, status=400)
         except json.JSONDecodeError as e:

@@ -16,3 +16,15 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.text[:50]
+
+
+class BannerImages(models.Model):
+    image_1 = models.TextField(blank=True, null=True)
+    image_2 = models.TextField(blank=True, null=True)
+    image_3 = models.TextField(blank=True, null=True)
+    image_4 = models.TextField(blank=True, null=True)
+    image_5 = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"BannerImages #{self.pk}"

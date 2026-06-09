@@ -5,8 +5,36 @@ from django.http import JsonResponse
 from django.conf import settings
 from decimal import Decimal
 import json
+import os
 import razorpay
 import requests as http_requests
+import resend
+from django.core.mail import send_mail
+from django.conf import settings as django_settings
+
+
+def send_order_confirmation_email(user_email, order_id, amount, currency):
+    try:
+        print(f"[EMAIL] Attempting to send order confirmation to: {user_email}")
+        send_mail(
+            subject="Thank you for your purchase!",
+            message=f"Thank you for purchasing with us!\nOrder ID: {order_id}\nAmount Paid: {amount} {currency}",
+            from_email=django_settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user_email],
+            html_message=f"""
+                <h2>Thank you for purchasing with us!</h2>
+                <p>Your order has been confirmed.</p>
+                <ul>
+                    <li><strong>Order ID:</strong> {order_id}</li>
+                    <li><strong>Amount Paid:</strong> {amount} {currency}</li>
+                </ul>
+                <p>We will process your order shortly. If you have any questions, feel free to contact us.</p>
+            """,
+            fail_silently=False,
+        )
+        print(f"[EMAIL] Order confirmation sent successfully to: {user_email}")
+    except Exception as e:
+        print(f"[EMAIL] Failed to send order confirmation email to {user_email}: {e}")
 
 from apps.orders.serializer import (
     CreateOrderSerializer, VerifyPaymentSerializer,
@@ -121,6 +149,13 @@ class VerifyPaymentView(View):
                 order.razorpay_signature = razorpay_signature
                 order.save()
 
+                send_order_confirmation_email(
+                    user_email=order.user.email,
+                    order_id=order.id,
+                    amount=order.total_price,
+                    currency=order.currency,
+                )
+
                 return JsonResponse({
                     "message": "Payment verified successfully",
                     "data": {
@@ -173,6 +208,12 @@ class RazorpayWebhookView(View):
                         order.status = 'paid'
                         order.razorpay_payment_id = razorpay_payment_id
                         order.save()
+                        send_order_confirmation_email(
+                            user_email=order.user.email,
+                            order_id=order.id,
+                            amount=order.total_price,
+                            currency=order.currency,
+                        )
                 except Order.DoesNotExist:
                     pass
 
@@ -297,6 +338,13 @@ class CapturePayPalOrderView(View):
                 order.status = 'paid'
                 order.paypal_payment_id = capture_id
                 order.save()
+
+                send_order_confirmation_email(
+                    user_email=order.user.email,
+                    order_id=order.id,
+                    amount=order.total_price,
+                    currency=order.currency,
+                )
 
                 return JsonResponse({
                     "message": "Payment captured successfully",
