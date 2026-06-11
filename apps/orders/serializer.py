@@ -22,7 +22,7 @@ class VerifyPaymentSerializer(serializers.Serializer):
 
 class CreatePayPalOrderSerializer(serializers.Serializer):
     user_email = serializers.EmailField()
-    currency = serializers.ChoiceField(choices=['USD', 'INR'])
+    currency = serializers.ChoiceField(choices=['USD'])
     items = OrderItemSerializer(many=True)
     return_url = serializers.URLField()
     cancel_url = serializers.URLField()

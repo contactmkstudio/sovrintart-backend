@@ -277,6 +277,7 @@ class CreatePayPalOrderView(View):
                         "price": str(order_item.price),
                     })
 
+
                 paypal_order = paypal_client.create_order(
                     amount=total_price,
                     currency=order.currency,
