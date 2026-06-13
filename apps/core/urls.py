@@ -8,4 +8,5 @@ urlpatterns = [
     path('<int:faq_id>/delete-faq/' , views.FAQDeleteView.as_view(), name='delete-faq'),
     path('send-email/' , views.SendEmailView.as_view() , name='send-email'),
     path('banner-images/', views.UploadBannerImages.as_view(), name='banner-images'),
+    path('email-subscription/', views.EmailSubscriptionView.as_view(), name='email-subscription'),
 ]

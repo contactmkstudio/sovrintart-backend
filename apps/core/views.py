@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from apps.core.models import FAQ, Announcement, BannerImages
 import json
 import base64
-from .serializer import ContactEmailSerializer, FAQSerializer, AnnouncementSerializer
+from .serializer import ContactEmailSerializer, FAQSerializer, AnnouncementSerializer, EmailSubscriptionSerializer
 import os
 from django.core.mail import send_mail
 from django.conf import settings as django_settings
@@ -192,3 +192,20 @@ class FAQDeleteView(View):
             print(f"Error deleting FAQ: {e}")
             return JsonResponse({"error": str(e)}, status=400)
       
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EmailSubscriptionView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            serializer = EmailSubscriptionSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse({"message": "Email subscribed successfully", "data": serializer.data}, status=201)
+            return JsonResponse(serializer.errors, status=400)
+        except json.JSONDecodeError as e:
+            print(f"JSON Error: {e}")
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            print(f"Error subscribing email: {e}")
+            return JsonResponse({"error": str(e)}, status=400)

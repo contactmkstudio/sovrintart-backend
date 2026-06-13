@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import FAQ, Announcement
+from .models import FAQ, Announcement , EmailSubscription
 
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,3 +17,9 @@ class ContactEmailSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100 , required=True)
     email = serializers.EmailField(required=True)
     message = serializers.CharField(required=True)        
+
+
+class EmailSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailSubscription
+        fields = "__all__"
