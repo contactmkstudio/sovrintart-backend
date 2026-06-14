@@ -13,6 +13,7 @@ from django.conf import settings as django_settings
 from apps.products.models import Product
 from apps.orders.models import Order
 from apps.accounts.models import User
+import resend
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -151,33 +152,42 @@ class FAQListView(View):
 
 
 # send email API        
+
 @method_decorator(csrf_exempt, name='dispatch')
 class SendEmailView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
             serializer = ContactEmailSerializer(data=data)
+
             if serializer.is_valid():
                 name = serializer.validated_data['name']
                 email = serializer.validated_data['email']
                 message = serializer.validated_data['message']
 
-                resend_api_key = os.getenv('RESEND_API_KEY')
-                send_mail(
-                    subject=f"Contact Form - {name}",
-                    message=f"Name: {name}\nEmail: {email}\nMessage: {message}",
-                    from_email=django_settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=["contact.mkstudio@protonmail.com"],
-                    fail_silently=False,
-                )
+                resend.api_key = os.getenv('RESEND_API_KEY')
+
+                params = {
+                    "from": "MK Studio <onboarding@resend.dev>",  
+                    "to": ["contact.mkstudio@protonmail.com"],
+                    "subject": f"Contact Form - {name}",
+                    "text": f"Name: {name}\nEmail: {email}\nMessage: {message}",
+                }
+
+                response = resend.Emails.send(params)
+                print("Resend response:", response)
+
                 return JsonResponse({"message": "Email sent successfully"}, status=200)
+
             return JsonResponse(serializer.errors, status=400)
+
         except json.JSONDecodeError as e:
             print(f"JSON Error: {e}")
             return JsonResponse({"error": "Invalid JSON"}, status=400)
         except Exception as e:
             print(f"Error sending email: {e}")
-            return JsonResponse({"error": str(e)}, status=400)
+            return JsonResponse({"error": str(e)}, status=500)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class FAQDeleteView(View):
