@@ -1,3 +1,4 @@
+
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -70,6 +71,7 @@ class CreateOrderView(View):
                     user=user,
                     currency=serializer.validated_data['currency'],
                     total_price=total_price,
+                    payment_gateway='razorpay',
                 )
 
                 # Create order items
@@ -380,6 +382,39 @@ class GetOrdersView(View):
             return JsonResponse({"error": "User not found"}, status=404)
 
         orders = Order.objects.filter(user=user).order_by('-created_at')
+
+        data = []
+        for order in orders:
+            items = []
+            for item in order.items.all():
+                product = Product.objects.filter(name=item.product_name).first()
+                items.append({
+                    "product_name": item.product_name,
+                    "size": item.size,
+                    "quantity": item.quantity,
+                    "price": str(item.price),
+                    "image": product.image if product else None,
+                })
+            data.append({
+                "order_id": order.id,
+                "total_price": str(order.total_price),
+                "currency": order.currency,
+                "status": order.status,
+                "payment_gateway": order.payment_gateway,
+                "items": items,
+                "created_at": order.created_at.isoformat(),
+            })
+
+        return JsonResponse({"orders": data})
+
+
+
+class GetPaidOrdersView(View):
+    def get(self, request):
+        try:
+            orders = Order.objects.filter(status='paid').order_by('-created_at')
+        except Order.DoesNotExist:
+            return JsonResponse({"error": "No paid orders found"}, status=404)
 
         data = []
         for order in orders:
