@@ -436,6 +436,7 @@ class GetPaidOrdersView(View):
                 "payment_gateway": order.payment_gateway,
                 "items": items,
                 "created_at": order.created_at.isoformat(),
+                "email": order.user.email,
             })
 
         return JsonResponse({"orders": data})
