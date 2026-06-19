@@ -11,6 +11,9 @@ import razorpay
 import requests as http_requests
 from django.core.mail import send_mail
 from django.conf import settings as django_settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def send_order_confirmation_email(order):
@@ -193,6 +196,7 @@ def send_order_confirmation_email(order):
             fail_silently=False,
         )
         print(f"[EMAIL] Order confirmation sent successfully to: {user_email}")
+        logger.info(f"Order confirmation sent successfully to: {user_email}")
 
         # Notify seller
         seller_html = f"""
@@ -267,9 +271,12 @@ def send_order_confirmation_email(order):
             fail_silently=False,
         )
         print(f"[EMAIL] Seller notification sent for order #{order_id}")
+        logger.info(f"Seller notification sent for order #{order_id}")
         return 'success'
     except Exception as e:
-        print(f"[EMAIL] Failed to send order confirmation email to {user_email}: {e}")
+        error_msg = f"Failed to send order confirmation email to {user_email}: {str(e)}"
+        print(f"[EMAIL] {error_msg}")
+        logger.error(error_msg, exc_info=True)
         return 'failure'
 
 from apps.orders.serializer import (
