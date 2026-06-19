@@ -12,9 +12,19 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import socket
 import dj_database_url
 from dotenv import load_dotenv
 load_dotenv()
+
+# Force IPv4-only DNS resolution to avoid unroutable IPv6 paths in containers
+# (e.g. smtp.gmail.com resolving to an IPv6 address with no outbound route)
+_original_getaddrinfo = socket.getaddrinfo
+
+def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    return _original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
+socket.getaddrinfo = _ipv4_only_getaddrinfo
 
 
 
