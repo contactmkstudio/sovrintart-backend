@@ -189,6 +189,7 @@ EMAIL_USE_SSL = os.environ.get('ORDER_EMAIL_USE_SSL', 'False') == 'True'
 EMAIL_HOST_USER = os.environ.get('ORDER_EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('ORDER_EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('ORDER_DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+EMAIL_TIMEOUT = 10  # Raise socket.timeout after 10s instead of hanging indefinitely
 
 # Razorpay Configuration
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
