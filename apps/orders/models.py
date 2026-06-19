@@ -15,6 +15,12 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
+    EMAIL_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failure', 'Failure'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='INR')
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -25,6 +31,7 @@ class Order(models.Model):
     paypal_order_id = models.CharField(max_length=255, blank=True, null=True)
     paypal_payment_id = models.CharField(max_length=255, blank=True, null=True)
     payment_gateway = models.CharField(max_length=20, blank=True, null=True)
+    emailsent = models.CharField(max_length=20, choices=EMAIL_STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -14,6 +14,10 @@ from django.conf import settings as django_settings
 
 
 def send_order_confirmation_email(order):
+    """
+    Send order confirmation emails to customer and seller.
+    Returns: 'success' if emails sent successfully, 'failure' if any error occurs
+    """
     user_email = order.user.email
     order_id = order.id
     amount = f"{order.total_price:,.2f}"
@@ -263,8 +267,10 @@ def send_order_confirmation_email(order):
             fail_silently=False,
         )
         print(f"[EMAIL] Seller notification sent for order #{order_id}")
+        return 'success'
     except Exception as e:
         print(f"[EMAIL] Failed to send order confirmation email to {user_email}: {e}")
+        return 'failure'
 
 from apps.orders.serializer import (
     CreateOrderSerializer, VerifyPaymentSerializer,
@@ -380,7 +386,9 @@ class VerifyPaymentView(View):
                 order.razorpay_signature = razorpay_signature
                 order.save()
 
-                send_order_confirmation_email(order)
+                email_status = send_order_confirmation_email(order)
+                order.emailsent = email_status
+                order.save()
 
                 return JsonResponse({
                     "message": "Payment verified successfully",
@@ -434,7 +442,9 @@ class RazorpayWebhookView(View):
                         order.status = 'paid'
                         order.razorpay_payment_id = razorpay_payment_id
                         order.save()
-                        send_order_confirmation_email(order)
+                        email_status = send_order_confirmation_email(order)
+                        order.emailsent = email_status
+                        order.save()
                 except Order.DoesNotExist:
                     pass
 
@@ -561,7 +571,9 @@ class CapturePayPalOrderView(View):
                 order.paypal_payment_id = capture_id
                 order.save()
 
-                send_order_confirmation_email(order)
+                email_status = send_order_confirmation_email(order)
+                order.emailsent = email_status
+                order.save()
 
                 return JsonResponse({
                     "message": "Payment captured successfully",
@@ -615,6 +627,7 @@ class GetOrdersView(View):
                 "currency": order.currency,
                 "status": order.status,
                 "payment_gateway": order.payment_gateway,
+                "emailsent": order.emailsent,
                 "items": items,
                 "created_at": order.created_at.isoformat(),
             })
@@ -648,6 +661,7 @@ class GetPaidOrdersView(View):
                 "currency": order.currency,
                 "status": order.status,
                 "payment_gateway": order.payment_gateway,
+                "emailsent": order.emailsent,
                 "items": items,
                 "created_at": order.created_at.isoformat(),
                 "email": order.user.email,
