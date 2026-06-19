@@ -143,8 +143,13 @@ class VerifyPaymentView(View):
                 order.save()
 
                 # Queue async email task
-                send_order_confirmation_email_task.delay(order.id)
-                logger.info(f"Email task queued for order #{order.id}")
+                try:
+                    send_order_confirmation_email_task.delay(order.id)
+                    logger.info(f"Email task queued for order #{order.id}")
+                except Exception as e:
+                    logger.error(f"Failed to queue email task for order #{order.id}: {str(e)}", exc_info=True)
+                    order.emailsent = 'failure'
+                    order.save()
 
                 return JsonResponse({
                     "message": "Payment verified successfully",
@@ -199,8 +204,13 @@ class RazorpayWebhookView(View):
                         order.razorpay_payment_id = razorpay_payment_id
                         order.save()
                         # Queue async email task
-                        send_order_confirmation_email_task.delay(order.id)
-                        logger.info(f"Email task queued for order #{order.id}")
+                        try:
+                            send_order_confirmation_email_task.delay(order.id)
+                            logger.info(f"Email task queued for order #{order.id}")
+                        except Exception as e:
+                            logger.error(f"Failed to queue email task for order #{order.id}: {str(e)}", exc_info=True)
+                            order.emailsent = 'failure'
+                            order.save()
                 except Order.DoesNotExist:
                     pass
 
@@ -328,8 +338,13 @@ class CapturePayPalOrderView(View):
                 order.save()
 
                 # Queue async email task
-                send_order_confirmation_email_task.delay(order.id)
-                logger.info(f"Email task queued for order #{order.id}")
+                try:
+                    send_order_confirmation_email_task.delay(order.id)
+                    logger.info(f"Email task queued for order #{order.id}")
+                except Exception as e:
+                    logger.error(f"Failed to queue email task for order #{order.id}: {str(e)}", exc_info=True)
+                    order.emailsent = 'failure'
+                    order.save()
 
                 return JsonResponse({
                     "message": "Payment captured successfully",
