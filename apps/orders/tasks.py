@@ -1,7 +1,8 @@
 from celery import shared_task
-from django.core.mail import send_mail
 from django.conf import settings as django_settings
 import logging
+import os
+import requests as http_requests
 
 logger = logging.getLogger(__name__)
 
@@ -180,14 +181,21 @@ def send_order_confirmation_email_task(self, order_id):
         """
 
         # Send to customer
-        send_mail(
-            subject=f"Your MK Atelier Order #{order_id} is Confirmed!",
-            message=f"Thank you for your purchase!\nOrder ID: #{order_id}\nItems:{item_rows_seller}\nTotal Paid: {currency} {amount}\n\nDelivery: 2-3 days (India) | 2-3 weeks (International)\n\nNeed help? Chat with us: https://wa.link/ma9cum",
-            from_email=django_settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user_email],
-            html_message=html_message,
-            fail_silently=False,
+        brevo_response = http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={
+                'api-key': os.getenv('BREVO_API_KEY'),
+                'Content-Type': 'application/json',
+            },
+            json={
+                'sender': {'name': 'MK Atelier', 'email': 'vhnagarajrakesh@gmail.com'},
+                'to': [{'email': user_email}],
+                'subject': f'Your MK Atelier Order #{order_id} is Confirmed!',
+                'htmlContent': html_message,
+            },
+            timeout=15,
         )
+        brevo_response.raise_for_status()
         logger.info(f"[ASYNC-EMAIL] Customer email sent to {user_email}")
 
         # Seller notification HTML
@@ -256,14 +264,21 @@ def send_order_confirmation_email_task(self, order_id):
         """
 
         # Send to seller
-        send_mail(
-            subject=f"New Order #{order_id} — {currency} {amount}",
-            message=f"New order received!\nOrder ID: #{order_id}\nCustomer: {user_email}\nItems:{item_rows_seller}\nTotal: {currency} {amount}",
-            from_email=django_settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['contact.mkstudio@protonmail.com'],
-            html_message=seller_html,
-            fail_silently=False,
+        brevo_seller = http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={
+                'api-key': os.getenv('BREVO_API_KEY'),
+                'Content-Type': 'application/json',
+            },
+            json={
+                'sender': {'name': 'MK Atelier', 'email': 'vhnagarajrakesh@gmail.com'},
+                'to': [{'email': 'contact.mkstudio@protonmail.com'}],
+                'subject': f'New Order #{order_id} — {currency} {amount}',
+                'htmlContent': seller_html,
+            },
+            timeout=15,
         )
+        brevo_seller.raise_for_status()
         logger.info(f"[ASYNC-EMAIL] Seller notification sent for order #{order_id}")
 
         # Update order status
