@@ -188,7 +188,7 @@ def send_order_confirmation_email_task(self, order_id):
                 'Content-Type': 'application/json',
             },
             json={
-                'sender': {'name': 'MK Atelier', 'email': 'vhnagarajrakesh@gmail.com'},
+                'sender': {'name': 'MK Atelier', 'email': 'sovrinart@gmail.com'},
                 'to': [{'email': user_email}],
                 'subject': f'Your MK Atelier Order #{order_id} is Confirmed!',
                 'htmlContent': html_message,
@@ -271,7 +271,7 @@ def send_order_confirmation_email_task(self, order_id):
                 'Content-Type': 'application/json',
             },
             json={
-                'sender': {'name': 'MK Atelier', 'email': 'vhnagarajrakesh@gmail.com'},
+                'sender': {'name': 'MK Atelier', 'email': 'sovrinart@gmail.com'},
                 'to': [{'email': 'contact.mkstudio@protonmail.com'}],
                 'subject': f'New Order #{order_id} — {currency} {amount}',
                 'htmlContent': seller_html,
