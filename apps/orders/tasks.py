@@ -22,7 +22,8 @@ def send_order_confirmation_email_task(self, order_id):
         currency = order.currency
         items = order.items.all()
 
-        logger.info(f"[ASYNC-EMAIL] Starting to send order confirmation for order #{order_id}")
+        brevo_key = os.getenv('BREVO_API_KEY', '')
+        logger.info(f"[ASYNC-EMAIL] Starting to send order confirmation for order #{order_id} | BREVO_KEY_SET={bool(brevo_key)} | KEY_PREFIX={brevo_key[:10] if brevo_key else 'MISSING'}")
 
         # Build item rows
         item_rows = ""
