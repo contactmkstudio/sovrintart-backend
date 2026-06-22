@@ -173,6 +173,19 @@ if os.environ.get('FRONTEND_URL'):
 
 CORS_ALLOW_CREDENTIALS = True
 
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "x-user-email",
+]
+
 # CSRF Trusted Origins - Required for POST/PUT/DELETE requests
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
