@@ -12,6 +12,7 @@ import requests as http_requests
 from django.conf import settings as django_settings
 import logging
 from apps.orders.tasks import send_order_confirmation_email_task
+from apps.core.decorators import admin_required
 
 logger = logging.getLogger(__name__)
 

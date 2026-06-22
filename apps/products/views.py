@@ -6,9 +6,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from apps.products.models import Product
 from apps.products.serializer import ProductSerializer
+from apps.core.decorators import admin_required
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AddProduct(View):
+    @admin_required
     def post(self , request):
         try:
             data = json.loads(request.body)
@@ -74,6 +76,7 @@ class GetProductsByCategory(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteProduct(View):
+    @admin_required
     def delete(self , request , pk):
         try:
             product = Product.objects.get(pk=pk)

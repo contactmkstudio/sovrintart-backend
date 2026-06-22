@@ -14,10 +14,12 @@ from apps.products.models import Product
 from apps.orders.models import Order
 from apps.accounts.models import User
 import resend
+from apps.core.decorators import admin_required
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadBannerImages(View):
+    @admin_required
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -99,6 +101,7 @@ class AnnouncementView(View):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
+    @admin_required
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -130,6 +133,7 @@ class FAQListView(View):
 
   
     # Create FAQ API
+    @admin_required
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -191,6 +195,7 @@ class SendEmailView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class FAQDeleteView(View):
+    @admin_required
     def delete(self, request, faq_id):
         try:
             faq = FAQ.objects.filter(id=faq_id)
