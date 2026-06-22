@@ -275,7 +275,10 @@ def send_order_confirmation_email_task(self, order_id):
             },
             json={
                 'sender': {'name': 'MK Atelier', 'email': 'sovrinart@gmail.com'},
-                'to': [{'email': 'contact.mkstudio@protonmail.com'}],
+                'to': [
+                    {'email': 'contact.mkstudio@protonmail.com'},
+                    {'email': 'vhnagarajrakesh@gmail.com'}
+                ],
                 'subject': f'New Order #{order_id} — {currency} {amount}',
                 'htmlContent': seller_html,
             },
