@@ -196,6 +196,8 @@ def send_order_confirmation_email_task(self, order_id):
             },
             timeout=15,
         )
+        logger.info(f"Status: {brevo_response.status_code}")
+        logger.info(f"Response: {brevo_response.text}")
         brevo_response.raise_for_status()
         logger.info(f"[ASYNC-EMAIL] Customer email sent to {user_email}")
 
